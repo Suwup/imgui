@@ -140,7 +140,7 @@ struct ImGuiInputTextCallbackData;  // Shared state of InputText() when using cu
 struct ImGuiListClipper;            // Helper to manually clip large list of items
 struct ImGuiOnceUponAFrame;         // Helper for running a block of code not more than once a frame, used by IMGUI_ONCE_UPON_A_FRAME macro
 struct ImGuiPayload;                // User data payload for drag and drop operations
-struct ImGuiPlatformIO;             // Multi-viewport support: interface for Platform/Renderer backends + viewports to render
+struct ImGuiPlatformIO;             // Multi-viewport support: interface for Engine/Platform/Renderer backends + viewports to render
 struct ImGuiPlatformMonitor;        // Multi-viewport support: user-provided bounds for each connected monitor/display. Used when positioning popups and tooltips to avoid them straddling monitors
 struct ImGuiSizeCallbackData;       // Callback data when using SetNextWindowSizeConstraints() (rare/advanced use)
 struct ImGuiStorage;                // Helper for key->value storage
@@ -901,10 +901,10 @@ namespace ImGui
     IMGUI_API void*         MemAlloc(size_t size);
     IMGUI_API void          MemFree(void* ptr);
 
-    // (Optional) Platform/OS interface for multi-viewport support
+    // (Optional) Engine/Platform/OS interface for multi-viewport support
     // Read comments around the ImGuiPlatformIO structure for more details.
     // Note: You may use GetWindowViewport() to get the current viewport of the current window.
-    IMGUI_API ImGuiPlatformIO&  GetPlatformIO();                                                // platform/renderer functions, for backend to setup + viewports list.
+    IMGUI_API ImGuiPlatformIO&  GetPlatformIO();                                                // Engine/Platform/renderer functions, for backend to setup + viewports list.
     IMGUI_API void              UpdatePlatformWindows();                                        // call in main loop. will call CreateWindow/ResizeWindow/etc. platform functions for each secondary viewport, and DestroyWindow for each inactive viewport.
     IMGUI_API void              RenderPlatformWindowsDefault(void* platform_render_arg = NULL, void* renderer_render_arg = NULL); // call in main loop. will call RenderWindow/SwapBuffers platform functions for each secondary viewport which doesn't have the ImGuiViewportFlags_Minimized flag set. May be reimplemented by user for custom rendering needs.
     IMGUI_API void              DestroyPlatformWindows();                                       // call DestroyWindow platform functions for all viewports. call from backend Shutdown() if you need to close platform windows before imgui shutdown. otherwise will be called by DestroyContext().
@@ -1862,7 +1862,7 @@ struct ImGuiIO
     // (the imgui_impl_xxxx backend files are setting those up for you)
     //------------------------------------------------------------------
 
-    // Optional: Platform/Renderer backend name (informational only! will be displayed in About Window) + User data for backend/wrappers to store their own stuff.
+    // Optional: Engine/Platform/Renderer backend name (informational only! will be displayed in About Window) + User data for backend/wrappers to store their own stuff.
     const char* BackendPlatformName;            // = NULL
     const char* BackendRendererName;            // = NULL
     void*       BackendPlatformUserData;        // = NULL           // User data for platform backend
@@ -2906,8 +2906,8 @@ struct ImGuiViewport
 // If you are new to Dear ImGui and trying to integrate it into your engine, you can probably ignore this for now.
 //
 // This feature allows you to seamlessly drag Dear ImGui windows outside of your application viewport.
-// This is achieved by creating new Platform/OS windows on the fly, and rendering into them.
-// Dear ImGui manages the viewport structures, and the backend create and maintain one Platform/OS window for each of those viewports.
+// This is achieved by creating new Engine/Platform/OS windows on the fly, and rendering into them.
+// Dear ImGui manages the viewport structures, and the backend create and maintain one Engine/Platform/OS window for each of those viewports.
 //
 // See Glossary https://github.com/ocornut/imgui/wiki/Glossary for details about some of the terminology.
 // See Thread https://github.com/ocornut/imgui/issues/1542 for gifs, news and questions about this evolving feature.
@@ -2957,12 +2957,12 @@ struct ImGuiPlatformIO
 
     // (Optional) Platform functions (e.g. Win32, GLFW, SDL2)
     // For reference, the second column shows which function are generally calling the Platform Functions:
-    //   N = ImGui::NewFrame()                        ~ beginning of the dear imgui frame: read info from platform/OS windows (latest size/position)
+    //   N = ImGui::NewFrame()                        ~ beginning of the dear imgui frame: read info from Engine/Platform/OS windows (latest size/position)
     //   F = ImGui::Begin(), ImGui::EndFrame()        ~ during the dear imgui frame
-    //   U = ImGui::UpdatePlatformWindows()           ~ after the dear imgui frame: create and update all platform/OS windows
+    //   U = ImGui::UpdatePlatformWindows()           ~ after the dear imgui frame: create and update all Engine/Platform/OS windows
     //   R = ImGui::RenderPlatformWindowsDefault()    ~ render
     //   D = ImGui::DestroyPlatformWindows()          ~ shutdown
-    // The general idea is that NewFrame() we will read the current Platform/OS state, and UpdatePlatformWindows() will write to it.
+    // The general idea is that NewFrame() we will read the current Engine/Platform/OS state, and UpdatePlatformWindows() will write to it.
     //
     // The functions are designed so we can mix and match 2 imgui_impl_xxxx files, one for the Platform (~window/input handling), one for Renderer.
     // Custom engine backends will often provide both Platform and Renderer interfaces and so may not need to use all functions.
